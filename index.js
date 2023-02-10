@@ -4,7 +4,6 @@ puppeteer.use(StealthPlugin());
 const Koa = require("koa");
 const bodyParser = require("koa-bodyparser");
 const app = new Koa();
-const fetch = require("isomorphic-fetch");
 app.use(bodyParser({ strict: false }));
 const jsesc = require("jsesc");
 require("events").EventEmitter.defaultMaxListeners = Infinity;
