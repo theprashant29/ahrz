@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
+const fetch = require("node-fetch");
 const Koa = require("koa");
 const bodyParser = require("koa-bodyparser");
 const app = new Koa();
@@ -23,28 +24,17 @@ const headersToRemove = [
   "content-length",
 ];
 
-const proxy = "http://45.87.243.142:6144";
-const username = "itnfedhk";
-const password = "alm6qd8l0gif";
-
-// let ip = fetch("https://api.ipify.org/?format=json");
-// ip.then((response) => {
-//   return response.json();
-// }).then((response2) => {
-//   console.log("ip", response2.ip);
-// });
-
 const responseHeadersToRemove = ["content-encoding"];
 // const responseHeadersToRemove = ["Accept-Ranges", "Content-Length", "Keep-Alive", "Connection", "content-encoding", "set-cookie"];
 
 (async () => {
+  // const browser = await puppeteer.launch({
+  //   executablePath: '/usr/bin/chromium-browser',
+  //   args: ['--no-sandbox', '--headless', '--disable-gpu'],
+  // });
   let options = {
     headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      `--proxy-server=${proxy}`,
-    ],
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   };
   if (process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD)
     options.executablePath = "/usr/bin/chromium-browser";
@@ -62,11 +52,6 @@ const responseHeadersToRemove = ["content-encoding"];
     let responseData;
     let responseHeaders = [];
     const page = await browser.newPage();
-    await page.authenticate({ username, password });
-
-    //new added
-    page.setJavaScriptEnabled(true);
-
     // console.log(url);
     let cookies = [];
     if (ctx.header.cookie) {
@@ -86,13 +71,16 @@ const responseHeadersToRemove = ["content-encoding"];
       headersToRemove.forEach((header) => delete headers[header]);
       await page.setExtraHTTPHeaders({
         ...headers,
+        // Cookie: "BSSESSID=%2FVWWlTpMz9InEpdn4CvRr4qSxD%2BB3f17Ngz4GR%2Bi",
         origin: base,
       });
     }
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+    const response = await fetch(
+      "https://main.seotoolshide.com/agent.php?show=xxxx"
     );
-
+    const userAgent = await response.text();
+    await page.setUserAgent(userAgent);
+    console.log(userAgent);
     if (ctx.method === "POST") {
       await page.removeAllListeners("request");
       await page.setRequestInterception(true);
